@@ -2,6 +2,7 @@ package com.vayetek.financeapp.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,7 @@ import java.util.List;
 
 public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerViewAdapter.ViewHolder> {
     private final Context context;
-    private final List<RSSItem> itemlist;
+    private List<RSSItem> itemlist;
 
     public NewsRecyclerViewAdapter(Context context, ArrayList<RSSItem> itemlist) {
         this.context = context;
@@ -57,5 +58,10 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             newsDate = (TextView) itemView.findViewById(R.id.news_date);
             newsImg = (NetworkImageView) itemView.findViewById(R.id.news_img);
         }
+    }
+
+    public void setItemlist(List<RSSItem> itemlist) {
+        this.itemlist = itemlist;
+        notifyDataSetChanged();
     }
 }

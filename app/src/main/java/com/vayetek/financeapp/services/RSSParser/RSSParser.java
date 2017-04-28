@@ -40,7 +40,12 @@ public class RSSParser extends DefaultHandler {
             if (currentitem != null) {
                 currentitem.mediaContent = url;
             }
-
+        } else if (qName.equalsIgnoreCase("enclosure")) {
+            //currentMessage.setMediaUrl(attributes.getValue(BaseFeedParser.Url));
+            String url = attributes.getValue("url");
+            if (currentitem != null) {
+                currentitem.mediaContent = url;
+            }
         }
         super.startElement(uri, localName, qName, attributes);
         if (localName.equalsIgnoreCase(TAG_ITEM)) {

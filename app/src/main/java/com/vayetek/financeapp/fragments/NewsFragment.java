@@ -4,8 +4,10 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +33,10 @@ public class NewsFragment extends Fragment {
     private RecyclerView listNews;
 
     public static final String[] NEWS_ENDPOINT = {"http://www.lemonde.fr/crise-financiere/rss_full.xml",
-            "http://www.jawharafm.net/fr/rss/showRss/88/1/2", "http://rss.nytimes.com/services/xml/rss/nyt/Economy.xml"};
+            "http://rss.nytimes.com/services/xml/rss/nyt/Economy.xml"};
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private NewsRecyclerViewAdapter newsRecyclerViewAdapter;
+    private int randomChannel = 0;
 
     public static NewsFragment newInstance() {
 
@@ -53,9 +58,26 @@ public class NewsFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_news, container, false);
         itemlist = new ArrayList<>();
+        initializeView(rootView);
         initializeRecyclerView(rootView);
-        new RetrieveRSSFeeds().execute();
+
+        new RetrieveRSSFeeds().execute(randomChannel);
         return rootView;
+    }
+
+    private void initializeView(View rootView) {
+        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.pull_to_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                int random = (int) (Math.random() * NEWS_ENDPOINT.length);
+                while (randomChannel == random) {
+                    random = (int) (Math.random() * NEWS_ENDPOINT.length);
+                }
+                randomChannel=random;
+                new RetrieveRSSFeeds().execute(randomChannel);
+            }
+        });
     }
 
     private void initializeRecyclerView(View rootView) {
@@ -63,12 +85,15 @@ public class NewsFragment extends Fragment {
         listNews.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
-    public class RetrieveRSSFeeds extends AsyncTask<Void, Void, Void> {
+    private class RetrieveRSSFeeds extends AsyncTask<Integer, Void, Void> {
         private ProgressDialog progress = null;
 
+
         @Override
-        protected Void doInBackground(Void... params) {
-            retrieveRSSFeed(NEWS_ENDPOINT[2], itemlist);
+        protected Void doInBackground(Integer... params) {
+            Log.d("Endpoint", "doInBackground: " + NEWS_ENDPOINT[params[0]]);
+            itemlist = new ArrayList<>();
+            retrieveRSSFeed(NEWS_ENDPOINT[params[0]], itemlist);
             return null;
         }
 
@@ -79,17 +104,23 @@ public class NewsFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-
-            progress = ProgressDialog.show(getContext(), null, "Loading ...");
-
+            if (!swipeRefreshLayout.isRefreshing()) {
+                progress = ProgressDialog.show(getContext(), null, "Loading ...");
+            }
             super.onPreExecute();
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            NewsRecyclerViewAdapter newsRecyclerViewAdapter = new NewsRecyclerViewAdapter(getContext(), itemlist);
-            listNews.setAdapter(newsRecyclerViewAdapter);
-            progress.dismiss();
+            if (newsRecyclerViewAdapter == null) {
+                newsRecyclerViewAdapter = new NewsRecyclerViewAdapter(getContext(), itemlist);
+                listNews.setAdapter(newsRecyclerViewAdapter);
+            } else {
+                newsRecyclerViewAdapter.setItemlist(itemlist);
+            }
+            if (progress != null)
+                progress.dismiss();
+            swipeRefreshLayout.setRefreshing(false);
             super.onPostExecute(result);
         }
 
