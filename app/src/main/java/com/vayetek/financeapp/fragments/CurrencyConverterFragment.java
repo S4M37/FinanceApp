@@ -75,6 +75,8 @@ public class CurrencyConverterFragment extends Fragment {
         initializeToolbar(rootView);
         setUpCurrencyFrom();
         setUpCurrencyTo();
+
+        currencyAmountFrom.setText("1");
         return rootView;
     }
 
@@ -94,7 +96,7 @@ public class CurrencyConverterFragment extends Fragment {
         Toolbar mainToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         mainToolbar.setContentInsetsAbsolute(0, 0);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mainToolbar);
-        mainToolbar.setNavigationIcon(R.drawable.ic_action_navigation_arrow_back);
+        mainToolbar.setNavigationIcon(R.drawable.ic_action_navigation_arrow_back_white);
         mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -186,6 +188,9 @@ public class CurrencyConverterFragment extends Fragment {
 
 
     void convertCurrency() {
+        if (currencyAmountFrom.getEditableText().toString().length() == 0) {
+            return;
+        }
         setLoading(true);
         Call<ResponseBody> call = Utils.getCurrencyApiRetrofitServices().
                 convertCurrency(currencyFrom.getCode(), currencyTo.getCode(), Double.parseDouble(currencyAmountFrom.getEditableText().toString()));

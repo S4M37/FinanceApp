@@ -2,7 +2,7 @@ package com.vayetek.financeapp.utils;
 
 import com.google.gson.Gson;
 import com.vayetek.financeapp.config.Endpoints;
-import com.vayetek.financeapp.services.RSSParser.CurrencyApiRetrofitServices;
+import com.vayetek.financeapp.services.CurrencyApiRetrofitServices;
 
 import java.util.concurrent.TimeUnit;
 

@@ -95,7 +95,7 @@ public class CountryPickerFragment extends Fragment {
         Toolbar mainToolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         mainToolbar.setContentInsetsAbsolute(0, 0);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mainToolbar);
-        mainToolbar.setNavigationIcon(R.drawable.ic_action_navigation_arrow_back);
+        mainToolbar.setNavigationIcon(R.drawable.ic_action_navigation_arrow_back_white);
         mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

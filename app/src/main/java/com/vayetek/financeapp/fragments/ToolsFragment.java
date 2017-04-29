@@ -46,6 +46,15 @@ public class ToolsFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        View currencyExchangeCard = rootView.findViewById(R.id.currency_exchange_card);
+        currencyExchangeCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), ToolsActivity.class);
+                intent.putExtra("toolsRequest",2);
+                startActivity(intent);
+            }
+        });
         View wealthEstimatorCard = rootView.findViewById(R.id.wealth_estimator_card);
         wealthEstimatorCard.setOnClickListener(new View.OnClickListener() {
             @Override

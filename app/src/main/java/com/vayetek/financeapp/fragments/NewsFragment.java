@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.adapters.NewsRecyclerViewAdapter;
-import com.vayetek.financeapp.services.RSSParser.RSSItem;
-import com.vayetek.financeapp.services.RSSParser.RSSParser;
+import com.vayetek.financeapp.services.RSSItem;
+import com.vayetek.financeapp.services.RSSParser;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;

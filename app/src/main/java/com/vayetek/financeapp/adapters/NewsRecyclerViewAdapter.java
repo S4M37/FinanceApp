@@ -1,15 +1,16 @@
 package com.vayetek.financeapp.adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.vayetek.financeapp.R;
-import com.vayetek.financeapp.services.RSSParser.RSSItem;
+import com.vayetek.financeapp.services.RSSItem;
 import com.vayetek.financeapp.widgets.NetworkImageView;
 
 import java.util.ArrayList;
@@ -33,10 +34,18 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        RSSItem rssItem = itemlist.get(position);
+        final RSSItem rssItem = itemlist.get(position);
         holder.newsDescription.setText(rssItem.description);
         holder.newsTitle.setText(rssItem.title);
         holder.newsDate.setText(rssItem.date);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(rssItem.link));
+                context.startActivity(i);
+            }
+        });
         holder.newsImg.setImageUrl(rssItem.mediaContent);
     }
 

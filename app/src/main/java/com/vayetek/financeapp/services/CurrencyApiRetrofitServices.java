@@ -1,4 +1,4 @@
-package com.vayetek.financeapp.services.RSSParser;
+package com.vayetek.financeapp.services;
 
 
 import com.vayetek.financeapp.config.Endpoints;
