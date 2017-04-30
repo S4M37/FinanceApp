@@ -1,6 +1,5 @@
 package com.vayetek.financeapp.fragments;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,6 +36,7 @@ public class NewsFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsRecyclerViewAdapter newsRecyclerViewAdapter;
     private int randomChannel = 0;
+    private View loading;
 
     public static NewsFragment newInstance() {
 
@@ -66,6 +66,7 @@ public class NewsFragment extends Fragment {
     }
 
     private void initializeView(View rootView) {
+        loading = rootView.findViewById(R.id.loading);
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.pull_to_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -74,7 +75,7 @@ public class NewsFragment extends Fragment {
                 while (randomChannel == random) {
                     random = (int) (Math.random() * NEWS_ENDPOINT.length);
                 }
-                randomChannel=random;
+                randomChannel = random;
                 new RetrieveRSSFeeds().execute(randomChannel);
             }
         });
@@ -86,7 +87,6 @@ public class NewsFragment extends Fragment {
     }
 
     private class RetrieveRSSFeeds extends AsyncTask<Integer, Void, Void> {
-        private ProgressDialog progress = null;
 
 
         @Override
@@ -105,7 +105,7 @@ public class NewsFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             if (!swipeRefreshLayout.isRefreshing()) {
-                progress = ProgressDialog.show(getContext(), null, "Loading ...");
+                setLoading(true);
             }
             super.onPreExecute();
         }
@@ -118,8 +118,7 @@ public class NewsFragment extends Fragment {
             } else {
                 newsRecyclerViewAdapter.setItemlist(itemlist);
             }
-            if (progress != null)
-                progress.dismiss();
+            setLoading(false);
             swipeRefreshLayout.setRefreshing(false);
             super.onPostExecute(result);
         }
@@ -146,6 +145,10 @@ public class NewsFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void setLoading(boolean isLoading) {
+        loading.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
 }

@@ -16,4 +16,7 @@ public interface CurrencyApiRetrofitServices {
     @GET(Endpoints.COURT_EXCHANGE_API)
     Call<ResponseBody> getCourtExchange();
 
+    @GET(Endpoints.COURT_DATA_API)
+    Call<ResponseBody> getBourseData();
+
 }
