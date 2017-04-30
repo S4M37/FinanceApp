@@ -1,7 +1,9 @@
 package com.vayetek.financeapp.models;
 
 
-public class MarketDataModel {
+import java.io.Serializable;
+
+public class MarketDataModel implements Serializable{
     private String name;
     private String openedWith;
     private String closedWith;

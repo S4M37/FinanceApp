@@ -1,9 +1,11 @@
 package com.vayetek.financeapp.adapters;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,8 +44,12 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
+                Log.d("rssItem","onClick: " + rssItem.link);
                 i.setData(Uri.parse(rssItem.link));
-                context.startActivity(i);
+                try {
+                    context.startActivity(i);
+                } catch (ActivityNotFoundException ignored) {
+                }
             }
         });
         holder.newsImg.setImageUrl(rssItem.mediaContent);

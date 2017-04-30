@@ -1,5 +1,6 @@
 package com.vayetek.financeapp.fragments;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -26,6 +27,7 @@ import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.gson.Gson;
 import com.vayetek.financeapp.R;
+import com.vayetek.financeapp.activities.ToolsActivity;
 import com.vayetek.financeapp.adapters.MarketDataRecyclerAdapter;
 import com.vayetek.financeapp.adapters.PerformanceRecyclerAdapter;
 import com.vayetek.financeapp.config.Const;
@@ -121,7 +123,6 @@ public class MarketFragment extends Fragment {
             @Override
             public void onRefresh() {
                 getBoursePerformanceIndices();
-                ;
                 getMarketData();
             }
         });
@@ -130,7 +131,10 @@ public class MarketFragment extends Fragment {
         voirAllCotation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+                Intent intent = new Intent(getContext(), ToolsActivity.class);
+                intent.putExtra("toolsRequest", 3);
+                intent.putExtra("marketDataList", marketDataModels);
+                startActivity(intent);
             }
         });
     }

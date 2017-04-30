@@ -10,6 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.fragments.CurrencyConverterFragment;
 import com.vayetek.financeapp.fragments.CurrencyExchangeFragment;
+import com.vayetek.financeapp.fragments.MarketDataFragment;
+import com.vayetek.financeapp.models.MarketDataModel;
+
+import java.util.List;
 
 public class ToolsActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
@@ -28,6 +32,10 @@ public class ToolsActivity extends AppCompatActivity {
             case 2:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 fragmentTransaction.replace(R.id.container, CurrencyExchangeFragment.newInstance());
+                break;
+            case 3:
+                List<MarketDataModel> marketDataModelList= (List<MarketDataModel>) getIntent().getSerializableExtra("marketDataList");
+                fragmentTransaction.replace(R.id.container, MarketDataFragment.newInstance(marketDataModelList));
                 break;
             default:
                 finish();
