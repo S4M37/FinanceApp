@@ -4,6 +4,7 @@ public class Endpoints {
 
     public static final String SERVER_IP = "http://192.168.1.4/DOMparserCurrency/";
     public static final String BOURSE_TUNIS_BASE_URL = "http://www.mobile.boursedetunis.com/";
+    public static final String GOOGLE_API_BASE_URL = "https://maps.googleapis.com/";
 
 
     //http://www.google.com/finance/converter
@@ -20,6 +21,7 @@ public class Endpoints {
         {"Authorization":"Basic YW5kcm9pZDpBbjEwZFBhc3M="}
     */
     public static final String BOURSE_PERFORMANCE = "market/ws/performance";
+    public static final String GOOGLE_NEARBYSEARCH = "maps/api/place/nearbysearch/json";
 }
 
 //http://www.mobile.boursedetunis.com/indice-app

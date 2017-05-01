@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.vayetek.financeapp.config.Endpoints;
 import com.vayetek.financeapp.services.BourseTunisieApiRetrofitServices;
 import com.vayetek.financeapp.services.CurrencyApiRetrofitServices;
+import com.vayetek.financeapp.services.GoogleApiRetrofitServices;
 
 import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,7 @@ public class Utils {
     private static BourseTunisieApiRetrofitServices bourseTunisieApiRetrofitServices;
 
     public static BourseTunisieApiRetrofitServices getBourseTunisieApiRetrofitServices() {
-        if (bourseTunisieApiRetrofitServices == null) {
+        if (googleApiRetrofitServices == null) {
 
             HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -61,6 +62,27 @@ public class Utils {
             bourseTunisieApiRetrofitServices = retrofit.create(BourseTunisieApiRetrofitServices.class);
         }
         return bourseTunisieApiRetrofitServices;
+    }
+
+    private static GoogleApiRetrofitServices googleApiRetrofitServices;
+
+    public static GoogleApiRetrofitServices getGoogleApiRetrofitServices() {
+        if (googleApiRetrofitServices == null) {
+
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            OkHttpClient client = new OkHttpClient().newBuilder().addInterceptor(interceptor)
+                    .connectTimeout(Utils.TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(Utils.TIMEOUT, TimeUnit.SECONDS).build();
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(Endpoints.GOOGLE_API_BASE_URL)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            googleApiRetrofitServices = retrofit.create(GoogleApiRetrofitServices.class);
+        }
+        return googleApiRetrofitServices;
     }
 
     private static Gson gson;

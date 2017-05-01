@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -59,6 +60,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
     private ImageButton mVoiceBtn;
     private ImageButton mEmptyBtn;
     private RelativeLayout mSearchTopBar;
+    private ProgressBar loading;
 
     private CharSequence mOldQueryText;
     private CharSequence mUserQuery;
@@ -155,6 +157,8 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
         mVoiceBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_voice_btn);
         mEmptyBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_empty_btn);
         mTintView = mSearchLayout.findViewById(R.id.transparent_view);
+
+        loading = (ProgressBar) mSearchLayout.findViewById(R.id.loading);
 
         mSearchSrcTextView.setOnClickListener(mOnClickListener);
         mBackBtn.setOnClickListener(mOnClickListener);
@@ -425,8 +429,9 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
                 }
             });
         } else {
-            mTintView.setVisibility(GONE);
+            //mTintView.setVisibility(GONE);
         }
+        mTintView.setVisibility(VISIBLE);
     }
 
     /**
@@ -733,5 +738,9 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
         void onSearchViewClosed();
     }
 
+    public void setLoading(boolean isLoading) {
+        loading.setVisibility(isLoading ? VISIBLE : GONE);
+        mEmptyBtn.setVisibility(isLoading ? GONE : VISIBLE);
+    }
 
 }

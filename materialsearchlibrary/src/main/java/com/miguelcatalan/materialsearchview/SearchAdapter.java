@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -54,9 +55,12 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
                     List<String> searchData = new ArrayList<>();
 
                     for (String string : suggestions) {
+                        /*
                         if (string.toLowerCase().startsWith(constraint.toString().toLowerCase())) {
                             searchData.add(string);
                         }
+                        */
+                        searchData.add(string);
                     }
 
                     // Assign the data to the FilterResults
@@ -70,6 +74,7 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 if (results.values != null) {
                     data = (ArrayList<String>) results.values;
+                    //data= (ArrayList<String>) Arrays.asList(suggestions);
                     notifyDataSetChanged();
                 }
             }

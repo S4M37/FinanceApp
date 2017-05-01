@@ -42,6 +42,8 @@
             <ImageButton
                 android:id="@+id/action_up_btn"
                 style="@style/MSV_ImageButton"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_action_navigation_arrow_back" />
 
@@ -58,6 +60,17 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:src="@drawable/ic_action_navigation_close"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/loading"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/search_icon_padding"
+                android:layout_marginRight="@dimen/search_icon_padding"
                 android:visibility="gone" />
 
             <View

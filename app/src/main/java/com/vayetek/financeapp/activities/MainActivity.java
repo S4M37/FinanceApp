@@ -9,20 +9,35 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.adapters.MainViewPagerAdapter;
 import com.vayetek.financeapp.fragments.MarketFragment;
 import com.vayetek.financeapp.fragments.NewsFragment;
 import com.vayetek.financeapp.fragments.ToolsFragment;
+import com.vayetek.financeapp.models.GoogleSearchModel;
+import com.vayetek.financeapp.utils.Utils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initializeToolbar();
         initializeSearchView();
-
         initiliazeTabView();
     }
 
@@ -116,8 +130,53 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(String queryText) {
+
                 //Do some magic
+                if (queryText.length() > 0) {
+                    materialSearchView.setLoading(true);
+                    Call<ResponseBody> call = Utils.getGoogleApiRetrofitServices().nearbySearch(getString(R.string.google_api_key),
+                            "36.7948624,10.0732372", 5000, "finance", queryText);
+                    call.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            Log.d("code", "onResponse: " + response.code());
+                            Log.d("message", "onResponse: " + response.message());
+                            if (response.code() != 200) {
+                                return;
+                            }
+                            try {
+                                JSONObject jsonObject = new JSONObject(response.body().string());
+                                JSONArray jsonArray = jsonObject.getJSONArray("results");
+                                Gson gson = Utils.getGson();
+                                ArrayList<String> suggestions = new ArrayList<>();
+                                List<GoogleSearchModel> nearbySearchResults = new ArrayList<>();
+                                int size = jsonArray.length();
+                                for (int i = 0; i < size; i++) {
+                                    GoogleSearchModel googleSearchModel = gson.fromJson(jsonArray.getString(i), GoogleSearchModel.class);
+                                    suggestions.add(googleSearchModel.name + " - " + googleSearchModel.vicinity);
+                                    nearbySearchResults.add(googleSearchModel);
+                                }
+                                if (size > 0) {
+                                    Log.d("suggestion", "onResponse: " + suggestions.toString());
+                                    materialSearchView.setSuggestions(suggestions.toArray(new String[suggestions.size()]));
+                                    //materialSearchView.showSuggestions();
+                                }else{
+                                    materialSearchView.setSuggestions(new String[]{});
+                                }
+                            } catch (NullPointerException | JSONException | IOException e) {
+                                e.printStackTrace();
+                            }
+                            materialSearchView.setLoading(false);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            materialSearchView.setLoading(false);
+                            t.printStackTrace();
+                        }
+                    });
+                }
                 return false;
             }
         });
@@ -133,9 +192,9 @@ public class MainActivity extends AppCompatActivity {
                 //Do some magic
             }
         });
-        materialSearchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
-        materialSearchView.setVoiceSearch(true); //or false
-
+        //materialSearchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
+        materialSearchView.setSuggestions(new String[]{});
+        materialSearchView.setVoiceSearch(false); //or false
     }
 
     private void initializeToolbar() {
@@ -174,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -193,7 +251,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 }
