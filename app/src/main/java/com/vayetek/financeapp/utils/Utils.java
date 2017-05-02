@@ -2,6 +2,7 @@ package com.vayetek.financeapp.utils;
 
 import com.google.gson.Gson;
 import com.vayetek.financeapp.config.Endpoints;
+import com.vayetek.financeapp.services.BourseTunisWebApiRetrofitServices;
 import com.vayetek.financeapp.services.BourseTunisieApiRetrofitServices;
 import com.vayetek.financeapp.services.CurrencyApiRetrofitServices;
 import com.vayetek.financeapp.services.GoogleApiRetrofitServices;
@@ -83,6 +84,27 @@ public class Utils {
             googleApiRetrofitServices = retrofit.create(GoogleApiRetrofitServices.class);
         }
         return googleApiRetrofitServices;
+    }
+
+    private static BourseTunisWebApiRetrofitServices bourseTunisWebApiRetrofitServices;
+
+    public static BourseTunisWebApiRetrofitServices getBourseTunisWebApiRetrofitServices() {
+        if (googleApiRetrofitServices == null) {
+
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            OkHttpClient client = new OkHttpClient().newBuilder().addInterceptor(interceptor)
+                    .connectTimeout(Utils.TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(Utils.TIMEOUT, TimeUnit.SECONDS).build();
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(Endpoints.BOURSE_TUNIS_API)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            bourseTunisWebApiRetrofitServices = retrofit.create(BourseTunisWebApiRetrofitServices.class);
+        }
+        return bourseTunisWebApiRetrofitServices;
     }
 
     private static Gson gson;

@@ -26,11 +26,15 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.activities.ToolsActivity;
 import com.vayetek.financeapp.adapters.MarketDataRecyclerAdapter;
+import com.vayetek.financeapp.adapters.MarketSectoralIndicesRecyclerAdapter;
 import com.vayetek.financeapp.adapters.PerformanceRecyclerAdapter;
 import com.vayetek.financeapp.config.Const;
+import com.vayetek.financeapp.models.IndicesSectoralModel;
 import com.vayetek.financeapp.models.MarketDataModel;
 import com.vayetek.financeapp.models.PerformanceStateModel;
 import com.vayetek.financeapp.utils.Utils;
@@ -71,6 +75,9 @@ public class MarketFragment extends Fragment {
     private RecyclerView marketDataRecyclerView;
     private ArrayList<MarketDataModel> marketDataModels;
     private TextView marketPerformance;
+    private RecyclerView marketSectoralIndicesRecyclerView;
+    private ArrayList<IndicesSectoralModel> listSectoralIndices;
+    private String clientId;
 
     public static MarketFragment newInstance() {
 
@@ -97,6 +104,8 @@ public class MarketFragment extends Fragment {
         initializeRecyclerView(rootView);
         getBoursePerformanceIndices();
         getMarketData();
+
+        getIndiceSectoriel();
         return rootView;
     }
 
@@ -115,6 +124,11 @@ public class MarketFragment extends Fragment {
         marketDataRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         marketDataRecyclerView.setHasFixedSize(false);
         marketDataRecyclerView.setNestedScrollingEnabled(false);
+
+        marketSectoralIndicesRecyclerView = (RecyclerView) rootView.findViewById(R.id.market_sectoral_indices_list);
+        marketSectoralIndicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        marketSectoralIndicesRecyclerView.setHasFixedSize(false);
+        marketSectoralIndicesRecyclerView.setNestedScrollingEnabled(false);
     }
 
     private void initializeView(View rootView) {
@@ -137,6 +151,135 @@ public class MarketFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        FloatingActionButton voirAllSectoralIndices = (FloatingActionButton) rootView.findViewById(R.id.voir_all_sectoral_indices);
+        voirAllSectoralIndices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), ToolsActivity.class);
+                intent.putExtra("toolsRequest", 4);
+                intent.putExtra("marketSectoralIndicesList", listSectoralIndices);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void getIndiceSectoriel() {
+        JsonObject ext = new JsonObject();
+        ext.addProperty("userId", "0000");
+
+        JsonArray supportedConnectionTypes = new JsonArray();
+        supportedConnectionTypes.add("long-polling");
+        supportedConnectionTypes.add("callback-polling");
+
+        JsonObject advice = new JsonObject();
+        advice.addProperty("timeout", 60000);
+        advice.addProperty("interval", 0);
+
+        JsonObject rootObject = new JsonObject();
+        rootObject.addProperty("version", "1.0");
+        rootObject.addProperty("minimumVersion", "0.9");
+        rootObject.addProperty("channel", "/meta/handshake");
+        rootObject.addProperty("id", 1);
+        rootObject.add("ext", ext);
+        rootObject.add("supportedConnectionTypes", supportedConnectionTypes);
+        rootObject.add("advice", advice);
+        JsonArray handshakeObject = new JsonArray();
+        handshakeObject.add(rootObject);
+        Call<ResponseBody> handshake = Utils.getBourseTunisWebApiRetrofitServices().handshake(handshakeObject);
+        handshake.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.d("code", "onResponse: " + response.code());
+                Log.d("message", "onResponse: " + response.message());
+                if (response.code() != 200) {
+                    return;
+                }
+                JSONArray jsonArray = null;
+                try {
+                    jsonArray = new JSONArray(response.body().string());
+                    clientId = jsonArray.getJSONObject(0).getString("clientId");
+
+                } catch (JSONException | IOException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                if (clientId == null) {
+                    return;
+                }
+                JsonObject value = new JsonObject();
+                value.addProperty("group", 11);
+                value.addProperty("isIndexSectorial", true);
+                JsonObject data = new JsonObject();
+                data.addProperty("userId", "0000");
+                data.addProperty("command", "onInitAction");
+                data.add("value", value);
+                JsonObject root = new JsonObject();
+                root.addProperty("channel", "/bvmt/process");
+                root.add("data", data);
+                root.addProperty("id", "5");
+                root.addProperty("clientId", clientId);
+                final JsonArray indiceSectorielBody = new JsonArray();
+                indiceSectorielBody.add(root);
+
+                call = Utils.getBourseTunisWebApiRetrofitServices().getPerformanceIndices(indiceSectorielBody);
+                call.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public int hashCode() {
+                        return super.hashCode();
+                    }
+
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.d("code", "onResponse: " + response.code());
+                        Log.d("message", "onResponse: " + response.message());
+                        if (response.code() != 200) {
+                            return;
+                        }
+                        try {
+                            JSONArray jsonArray = new JSONArray(response.body().string());
+                            JSONArray responseObject = new JSONArray(jsonArray.getJSONObject(0).getJSONObject("data").getJSONObject("value").getString("indexSectorial"));
+                            listSectoralIndices = new ArrayList<>();
+                            for (int i = 0; i < responseObject.length(); i++) {
+                                JSONObject tmp = responseObject.getJSONObject(i);
+                                IndicesSectoralModel indicesSectoralModel = new IndicesSectoralModel();
+                                indicesSectoralModel.setPreviousClose(tmp.getString("previousClose"));
+                                indicesSectoralModel.setName(tmp.getString("indice"));
+                                indicesSectoralModel.setValue(tmp.getString("value"));
+                                indicesSectoralModel.setVariation(tmp.getString("variation"));
+                                indicesSectoralModel.setPercentChange(tmp.getDouble("percentChange"));
+                                listSectoralIndices.add(indicesSectoralModel);
+                            }
+
+                            List<IndicesSectoralModel> indicesSectoralModelsSorted = new ArrayList<>(listSectoralIndices);
+                            Collections.sort(indicesSectoralModelsSorted, new Comparator<IndicesSectoralModel>() {
+                                @Override
+                                public int compare(IndicesSectoralModel o1, IndicesSectoralModel o2) {
+                                    return Math.abs(o1.getPercentChange()) < Math.abs(o2.getPercentChange()) ? 1 : -1;
+                                }
+                            });
+                            indicesSectoralModelsSorted = indicesSectoralModelsSorted.subList(0, 3);
+
+                            MarketSectoralIndicesRecyclerAdapter marketSectoralIndicesRecyclerAdapter = new MarketSectoralIndicesRecyclerAdapter(getContext(), indicesSectoralModelsSorted);
+                            marketSectoralIndicesRecyclerView.setAdapter(marketSectoralIndicesRecyclerAdapter);
+
+                        } catch (JSONException | IOException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                        setLoading(false);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
     }
 
     private void initializeCharts(View rootView) {
@@ -335,7 +478,7 @@ public class MarketFragment extends Fragment {
                             return f1 < f2 ? 1 : -1;
                         }
                     });
-                    marketDataModelSorted = marketDataModelSorted.subList(0, 5);
+                    marketDataModelSorted = marketDataModelSorted.subList(0, 3);
                     MarketDataRecyclerAdapter marketDataRecyclerAdapter = new MarketDataRecyclerAdapter(getContext(), marketDataModelSorted);
                     marketDataRecyclerView.setAdapter(marketDataRecyclerAdapter);
                 } catch (JSONException | IOException | NullPointerException e) {

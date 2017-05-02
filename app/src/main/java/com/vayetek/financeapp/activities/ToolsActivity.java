@@ -11,6 +11,8 @@ import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.fragments.CurrencyConverterFragment;
 import com.vayetek.financeapp.fragments.CurrencyExchangeFragment;
 import com.vayetek.financeapp.fragments.MarketDataFragment;
+import com.vayetek.financeapp.fragments.MarketSectoralIndicesFragment;
+import com.vayetek.financeapp.models.IndicesSectoralModel;
 import com.vayetek.financeapp.models.MarketDataModel;
 
 import java.util.List;
@@ -34,8 +36,18 @@ public class ToolsActivity extends AppCompatActivity {
                 fragmentTransaction.replace(R.id.container, CurrencyExchangeFragment.newInstance());
                 break;
             case 3:
-                List<MarketDataModel> marketDataModelList= (List<MarketDataModel>) getIntent().getSerializableExtra("marketDataList");
+                List<MarketDataModel> marketDataModelList = (List<MarketDataModel>) getIntent().getSerializableExtra("marketDataList");
+                if (marketDataModelList == null) {
+                    finish();
+                }
                 fragmentTransaction.replace(R.id.container, MarketDataFragment.newInstance(marketDataModelList));
+                break;
+            case 4:
+                List<IndicesSectoralModel> indicesSectoralModels = (List<IndicesSectoralModel>) getIntent().getSerializableExtra("marketSectoralIndicesList");
+                if (indicesSectoralModels == null) {
+                    finish();
+                }
+                fragmentTransaction.replace(R.id.container, MarketSectoralIndicesFragment.newInstance(indicesSectoralModels));
                 break;
             default:
                 finish();
