@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.fragments.CurrencyConverterFragment;
 import com.vayetek.financeapp.fragments.CurrencyExchangeFragment;
+import com.vayetek.financeapp.fragments.MapFragment;
 import com.vayetek.financeapp.fragments.MarketDataFragment;
 import com.vayetek.financeapp.fragments.MarketSectoralIndicesFragment;
 import com.vayetek.financeapp.models.IndicesSectoralModel;
@@ -48,6 +49,9 @@ public class ToolsActivity extends AppCompatActivity {
                     finish();
                 }
                 fragmentTransaction.replace(R.id.container, MarketSectoralIndicesFragment.newInstance(indicesSectoralModels));
+                break;
+            case 6:
+                fragmentTransaction.replace(R.id.container, MapFragment.newInstance());
                 break;
             default:
                 finish();

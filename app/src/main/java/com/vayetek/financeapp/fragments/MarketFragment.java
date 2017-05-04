@@ -15,13 +15,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
@@ -78,6 +82,9 @@ public class MarketFragment extends Fragment {
     private RecyclerView marketSectoralIndicesRecyclerView;
     private ArrayList<IndicesSectoralModel> listSectoralIndices;
     private String clientId;
+    private LineChart tunindexChart;
+    private ArrayList<String> tunidexHours;
+    private double previousClose;
 
     public static MarketFragment newInstance() {
 
@@ -272,6 +279,64 @@ public class MarketFragment extends Fragment {
                         t.printStackTrace();
                     }
                 });
+
+                value = new JsonObject();
+                value.addProperty("group", 11);
+                value.addProperty("isIndexReference", true);
+                value.addProperty("isRecap", true);
+                data = new JsonObject();
+                data.addProperty("userId", "0000");
+                data.addProperty("command", "onInitAction");
+                data.add("value", value);
+                root = new JsonObject();
+                root.addProperty("channel", "/bvmt/process");
+                root.add("data", data);
+                root.addProperty("id", 6);
+                root.addProperty("clientId", clientId);
+                final JsonArray tuniDexObj = new JsonArray();
+                tuniDexObj.add(root);
+                Log.d("tuniDexObj", "onResponse: " + tuniDexObj);
+                Call<ResponseBody> callTunidex = Utils.getBourseTunisWebApiRetrofitServices().getPerformanceIndices(tuniDexObj);
+                callTunidex.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.d("code", "onResponse: " + response.code());
+                        Log.d("message", "onResponse: " + response.message());
+                        if (response.code() != 200) {
+                            return;
+                        }
+                        try {
+                            JSONArray jsonArray = new JSONArray(response.body().string());
+                            JSONArray responseObject = new JSONArray(jsonArray.getJSONObject(0).getJSONObject("data").getJSONObject("value").getString("indexReference"));
+                            previousClose = responseObject.getJSONObject(0).getDouble("previousClose");
+                            responseObject = responseObject.getJSONObject(0).getJSONArray("lastTransaction");
+                            YAxis yAxis = tunindexChart.getAxisLeft();
+                            LimitLine ll1 = new LimitLine((float) previousClose, "Previous Close");
+                            ll1.setLineWidth(4f);
+                            ll1.enableDashedLine(10f, 10f, 0f);
+                            ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+                            ll1.setTextSize(10f);
+                            yAxis.addLimitLine(ll1);
+                            Log.d("responseObject", "onResponse: " + responseObject.toString());
+                            List<Entry> entries = new ArrayList<>();
+                            tunidexHours = new ArrayList<>();
+                            for (int i = 0; i < responseObject.length(); i++) {
+                                JSONObject jsonObject = responseObject.getJSONObject(i);
+                                entries.add(new Entry(i, (float) jsonObject.getDouble("value")));
+                                tunidexHours.add(jsonObject.getString("time").substring(0, 5));
+                            }
+                            setTunindexData(entries);
+                        } catch (JSONException | IOException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                        setLoading(false);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
             }
 
             @Override
@@ -361,7 +426,7 @@ public class MarketFragment extends Fragment {
         yAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return "-" + value + "%";
+                return "-" + round(value, 1) + "%";
             }
         });
         baissesChart.getAxisRight().setEnabled(false);
@@ -445,7 +510,35 @@ public class MarketFragment extends Fragment {
         });
         //yAxis.setEnabled(false);
         volumesChart.getAxisRight().setEnabled(false);
+        //tunindex chart
+        tunindexChart = (LineChart) rootView.findViewById(R.id.chart_tunindex);
 
+        tunindexChart.getDescription().setEnabled(false);
+        tunindexChart.getLegend().setEnabled(false);
+        tunindexChart.setHighlightPerTapEnabled(false);
+        tunindexChart.setHighlightPerDragEnabled(false);
+        // scaling can now only be done on x- and y-axis separately
+        tunindexChart.setPinchZoom(false);
+        tunindexChart.setDoubleTapToZoomEnabled(false);
+        tunindexChart.setDrawGridBackground(false);
+        xAxis = tunindexChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f); // only intervals of 1 day
+        xAxis.setLabelCount(7);
+        xAxis.setDrawLimitLinesBehindData(true);
+        xAxis.setTextSize(8f);
+
+
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return tunidexHours.get((int) value);
+            }
+        });
+
+        //yAxis.setEnabled(false);
+        tunindexChart.getAxisRight().setEnabled(false);
     }
 
     private void getMarketData() {
@@ -681,6 +774,24 @@ public class MarketFragment extends Fragment {
         // add a nice and smooth animation
         volumesChart.animateY(500);
         volumesChart.setVisibility(View.VISIBLE);
+    }
+
+    private void setTunindexData(List<Entry> indTunindexEntries) {
+        LineData lineData = new LineData();
+        LineDataSet set = new LineDataSet(indTunindexEntries, "tunindex");
+        set.setColor(Color.parseColor("#03A9F4"));
+        set.setValueTextSize(10f);
+        set.setValueTextColor(Color.rgb(0, 0, 0));
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set.setDrawValues(false);
+        lineData.addDataSet(set);
+        //BarData data = new CombinedData();
+        //data.setData(barData);
+        tunindexChart.setData(lineData);
+        tunindexChart.invalidate();
+        // add a nice and smooth animation
+        tunindexChart.animateY(500);
+        tunindexChart.setVisibility(View.VISIBLE);
     }
 
     public void setLoading(boolean isLoading) {

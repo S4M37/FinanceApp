@@ -59,6 +59,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
     private ImageButton mBackBtn;
     private ImageButton mVoiceBtn;
     private ImageButton mEmptyBtn;
+    private ImageButton mMapBtn;
     private RelativeLayout mSearchTopBar;
     private ProgressBar loading;
 
@@ -79,6 +80,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
     private Drawable suggestionIcon;
 
     private Context mContext;
+    private OnMapClickListener onMapClickListener;
 
     public MaterialSearchView(Context context) {
         this(context, null);
@@ -156,6 +158,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
         mBackBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_up_btn);
         mVoiceBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_voice_btn);
         mEmptyBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_empty_btn);
+        mMapBtn = (ImageButton) mSearchLayout.findViewById(R.id.action_map_btn);
         mTintView = mSearchLayout.findViewById(R.id.transparent_view);
 
         loading = (ProgressBar) mSearchLayout.findViewById(R.id.loading);
@@ -165,6 +168,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
         mVoiceBtn.setOnClickListener(mOnClickListener);
         mEmptyBtn.setOnClickListener(mOnClickListener);
         mTintView.setOnClickListener(mOnClickListener);
+        mMapBtn.setOnClickListener(mOnClickListener);
 
         allowVoiceSearch = false;
 
@@ -234,9 +238,19 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
                 showSuggestions();
             } else if (v == mTintView) {
                 closeSearch();
+            } else if (v == mMapBtn) {
+                onMapClick();
             }
         }
     };
+
+    private void onMapClick() {
+        this.onMapClickListener.onMapClickListener();
+    }
+
+    public void setOnMapClickListener(OnMapClickListener onMapClickListener) {
+        this.onMapClickListener = onMapClickListener;
+    }
 
     private void onVoiceClicked() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -472,6 +486,7 @@ public class MaterialSearchView extends FrameLayout implements Filter.FilterList
         } else {
             mVoiceBtn.setVisibility(GONE);
         }
+        mMapBtn.setVisibility(show ? VISIBLE : GONE);
     }
 
     /**

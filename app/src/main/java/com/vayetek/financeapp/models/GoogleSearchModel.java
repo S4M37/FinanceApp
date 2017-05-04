@@ -8,13 +8,7 @@ public class GoogleSearchModel {
     public String place_id;
     public Geometry geometry;
 
-    private class Geometry {
-        public Location location;
 
-        private class Location {
-            public String lat;
-            public String lng;
-        }
-    }
 
 }
+

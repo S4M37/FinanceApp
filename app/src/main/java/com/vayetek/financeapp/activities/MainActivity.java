@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.miguelcatalan.materialsearchview.OnMapClickListener;
 import com.vayetek.financeapp.R;
 import com.vayetek.financeapp.adapters.MainViewPagerAdapter;
 import com.vayetek.financeapp.config.Const;
@@ -186,6 +187,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //materialSearchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
         materialSearchView.setSuggestions(new String[]{});
         materialSearchView.setVoiceSearch(false); //or false
+        materialSearchView.setOnMapClickListener(new OnMapClickListener() {
+            @Override
+            public void onMapClickListener() {
+                Log.d("onMapClickListener", "onMapClickListener: onMapClickListener");
+                Intent intent = new Intent(MainActivity.this, ToolsActivity.class);
+                intent.putExtra("toolsRequest", 6);
+                startActivity(intent);
+            }
+        });
     }
 
     private void initializeToolbar() {
